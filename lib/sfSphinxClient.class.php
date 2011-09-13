@@ -1553,11 +1553,12 @@ class sfSphinxClient
     $req .= pack('N', strlen($words)) . $words; // req words
 
     // options
-    $req .= pack('N', strlen($opts['before_match'])) . $opts['before_match'];
-    $req .= pack('N', strlen($opts['after_match'])) . $opts['after_match'];
-    $req .= pack('N', strlen($opts['chunk_separator'])) . $opts['chunk_separator'];
-    $req .= pack('N', (int)$opts['limit']);
-    $req .= pack('N', (int)$opts['around']);
+    $req .= pack("N", strlen($opts["before_match"])) . $opts["before_match"];
+    $req .= pack("N", strlen($opts["after_match"])) . $opts["after_match"];
+    $req .= pack("N", strlen($opts["chunk_separator"])) . $opts["chunk_separator"];
+    $req .= pack("NN", (int)$opts["limit"], (int)$opts["around"]);
+    $req .= pack("NNN", (int)$opts["limit_passages"], (int)$opts["limit_words"], (int)$opts["start_passage_id"]); // v.1.2
+    $req .= pack("N", strlen($opts["html_strip_mode"])) . $opts["html_strip_mode"];
 
     // documents
     $req .= pack('N', count($docs));
@@ -1582,7 +1583,7 @@ class sfSphinxClient
     $pos = 0;
     $res = array();
     $rlen = strlen($response);
-    for ($i = 0, $c = count($docs); $i < $c; $i ++)
+    for ($i=0; $i<count($docs); $i++)
     {
       list(, $len) = unpack('N*', substr($response, $pos, 4));
       $pos += 4;
@@ -1593,7 +1594,7 @@ class sfSphinxClient
         $this->MBPop();
         throw new Exception($this->error);
       }
-      $res[] = substr($response, $pos, $len);
+      $res[] = $len ? substr($response, $pos, $len) : "";
       $pos += $len;
     }
 
